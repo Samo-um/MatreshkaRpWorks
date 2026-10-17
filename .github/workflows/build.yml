@@ -1,4 +1,4 @@
-name: Build APK
+name: name: Build APK
 on: [push, workflow_dispatch]
 jobs:
   build:
@@ -9,14 +9,15 @@ jobs:
         run: |
           unzip -o MATRESHKARP_WORKS_online_project.zip
           rm MATRESHKARP_WORKS_online_project.zip
-      - uses: actions/setup-java@v4
+          mv MATRESHKARP_WORKS_online_project/* . || true
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
       - name: Build
         run: |
+          chmod +x android/gradlew
           cd android
-          chmod +x gradlew
           ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
