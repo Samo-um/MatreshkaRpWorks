@@ -9,24 +9,21 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-      - name: Build App
-        run: |
+      - run: |
           rm -rf app
           mkdir -p app/src/main/java/com/matreshka/works
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/layout
           echo 'include ":app"' > settings.gradle
           echo 'plugins { id "com.android.application" version "8.2.2" apply false }' > build.gradle
-          echo 'plugins { id "com.android.application" } android { namespace "com.matreshka.works"; compileSdk 34; defaultConfig { applicationId "com.matreshka.works"; minSdk 24; targetSdk 34 } } dependencies { implementation "androidx.appcompat:appcompat:1.6.1" }' > app/build.gradle
-          echo '<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="MATRESHKA WORKS CHAT" android:theme="@android:style/Theme.Material.Light.DarkActionBar"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
-          echo '<resources><string name="app_name">MATRESHKA WORKS CHAT</string></resources>' > app/src/main/res/values/strings.xml
-          echo '<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent" android:id="@+id/root" />' > app/src/main/res/layout/activity_main.xml
-          echo 'package com.matreshka.works; import android.app.AlertDialog; import android.os.Bundle; import android.widget.*; import androidx.appcompat.app.AppCompatActivity; public class MainActivity extends AppCompatActivity { String[] jobs={"1. Weapon Resale - 15k / 10k day","2. Clothes Sale - 20k / 10k","3. Hide Cars - 20k","4. Construction Business - 75k +10k/trip","5. Taxi Driver - 5k +5k/trip","6. Dealer - 200k start / 100k","7. Construction Director - 700k / 276k","8. Cards and Raids - 45k"}; protected void onCreate(Bundle b){ super.onCreate(b); setContentView(R.layout.activity_main); LinearLayout root=findViewById(R.id.root); TextView title=new TextView(this); title.setText("MATRESHKA WORKS CHAT\n27 SRV\n\nASK QUESTION - DIRECTOR WILL ANSWER SOON"); title.setPadding(20,20,20,20); title.setTextSize(16); root.addView(title); Button ask=new Button(this); ask.setText("ASK DIRECTOR"); ask.setOnClickListener(v->{ EditText e=new EditText(this); new AlertDialog.Builder(this).setTitle("ASK DIRECTOR").setMessage("Director will answer soon").setView(e).setPositiveButton("Send",(d,w)->Toast.makeText(this,"Sent to Director",1).show()).show(); }); root.addView(ask); for(String job:jobs){ TextView tv=new TextView(this); tv.setText(job); tv.setPadding(24,16,24,16); tv.setTextSize(14); root.addView(tv); } } }' > app/src/main/java/com/matreshka/works/MainActivity.java
+          echo 'plugins { id "com.android.application" } android { namespace "com.matreshka.works"; compileSdk 33; defaultConfig { applicationId "com.matreshka.works"; minSdk 24; targetSdk 33 } } dependencies { implementation "androidx.appcompat:appcompat:1.6.1" }' > app/build.gradle
+          echo '<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="MATRESHKA"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<resources></resources>' > app/src/main/res/values/strings.xml
+          echo '<TextView xmlns:android="http://schemas.android.com/apk/res/android" android:text="MATRESHKA WORKS CHAT - 8 jobs" android:layout_width="match_parent" android:layout_height="match_parent" />' > app/src/main/res/layout/activity_main.xml
+          echo 'package com.matreshka.works; import android.os.Bundle; import androidx.appcompat.app.AppCompatActivity; public class MainActivity extends AppCompatActivity { protected void onCreate(Bundle b){ super.onCreate(b); setContentView(R.layout.activity_main); } }' > app/src/main/java/com/matreshka/works/MainActivity.java
       - uses: gradle/actions/setup-gradle@v4
-      - run: gradle :app:assembleDebug
+      - run: gradle :app:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
-          name: MATRESHKA-WORKS-CHAT
+          name: MATRESHKA
           path: app/build/outputs/apk/debug/app-debug.apk
