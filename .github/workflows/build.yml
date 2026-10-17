@@ -9,28 +9,76 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - run: |
+
+      - name: Create 100MB App
+        run: |
           rm -rf app
           mkdir -p app/src/main/java/com/matreshka/works
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/assets
-          echo 'pluginManagement{repositories{google();mavenCentral();gradlePluginPortal()}} include ":app"' > settings.gradle
-          echo 'plugins{id "com.android.application" version "8.2.2" apply false}' > build.gradle
-          cat > app/build.gradle <<'GRADLE'
-          plugins{id "com.android.application"}
-          android{namespace "com.matreshka.works";compileSdk 34;defaultConfig{applicationId "com.matreshka.works";minSdk 24;targetSdk 34;versionCode 100;versionName "100MB"}}
-          dependencies{implementation "androidx.appcompat:appcompat:1.6.1";implementation "com.google.android.material:material:1.11.0";implementation "androidx.recyclerview:recyclerview:1.3.2";implementation "androidx.cardview:cardview:1.0.0"}
-          GRADLE
-          for i in 1 2 3 4 5 6 7 8 9 10; do dd if=/dev/urandom of=app/src/main/assets/video${i}.mp4 bs=1M count=10 status=none; done
-          cat > app/src/main/AndroidManifest.xml <<'MANI'
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="MATRESHKA WORKS CHAT ✓" android:theme="@android:style/Theme.Material.Light.DarkActionBar"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
-          MANI
+          
+          echo 'pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } } include ":app"' > settings.gradle
+          echo 'plugins { id "com.android.application" version "8.2.2" apply false }' > build.gradle
+          
+          cat > app/build.gradle <<'BUILDGRADLE'
+          plugins { id "com.android.application" }
+          android {
+            namespace "com.matreshka.works"
+            compileSdk 34
+            defaultConfig {
+              applicationId "com.matreshka.works"
+              minSdk 24
+              targetSdk 34
+              versionCode 100
+              versionName "100MB-VERIFIED"
+            }
+          }
+          dependencies {
+            implementation "androidx.appcompat:appcompat:1.6.1"
+            implementation "com.google.android.material:material:1.11.0"
+            implementation "androidx.recyclerview:recyclerview:1.3.2"
+            implementation "androidx.cardview:cardview:1.0.0"
+          }
+          BUILDGRADLE
+
+          # Создаем 100МБ файл порциями - быстро и надежно
+          python3 -c "
+          import os
+          f=open('app/src/main/assets/big.mp4','wb')
+          for i in range(10):
+              f.write(os.urandom(10*1024*1024))
+          f.close()
+          print('100MB created')
+          "
+
+          cat > app/src/main/AndroidManifest.xml <<'MANIFEST'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <application android:label="MATRESHKA WORKS CHAT ✓" android:theme="@android:style/Theme.Material.Light.DarkActionBar">
+              <activity android:name=".MainActivity" android:exported="true">
+                <intent-filter>
+                  <action android:name="android.intent.action.MAIN"/>
+                  <category android:name="android.intent.category.LAUNCHER"/>
+                </intent-filter>
+              </activity>
+            </application>
+          </manifest>
+          MANIFEST
+
           echo '<resources><string name="app_name">MATRESHKA WORKS CHAT ✓</string></resources>' > app/src/main/res/values/strings.xml
-          cat > app/src/main/res/layout/activity_main.xml <<'LAY'
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:background="#070A18" android:layout_width="match_parent" android:layout_height="match_parent"><LinearLayout android:orientation="horizontal" android:background="#0F122E" android:padding="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"><TextView android:text="MATRESHKA WORKS CHAT ✓" android:textColor="#FFF" android:textStyle="bold" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/></LinearLayout><Button android:id="@+id/btnAsk" android:text="❓ ЗАДАТЬ ВОПРОС ДИРЕКТОРУ" android:layout_width="match_parent" android:layout_height="wrap_content"/><androidx.recyclerview.widget.RecyclerView android:id="@+id/rvWorks" android:layout_width="match_parent" android:layout_height="match_parent"/></LinearLayout>
-          LAY
-          cat > app/src/main/java/com/matreshka/works/MainActivity.kt <<'KT'
+
+          cat > app/src/main/res/layout/activity_main.xml <<'LAYOUT'
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:background="#070A18" android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout android:orientation="horizontal" android:background="#0F122E" android:padding="12dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+              <TextView android:text="MATRESHKA WORKS CHAT ✓" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="16sp" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+              <TextView android:text="27 SRV" android:textColor="#1DA1F2" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <Button android:id="@+id/btnAsk" android:text="❓ ЗАДАТЬ ВОПРОС - ДИРЕКТОР ОТВЕТИТ В БЛИЖАЙШЕЕ ВРЕМЯ" android:textColor="#FFFFFF" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="8dp"/>
+          </LinearLayout>
+          LAYOUT
+
+          cat > app/src/main/java/com/matreshka/works/MainActivity.kt <<'KOTLIN'
           package com.matreshka.works
           import android.app.AlertDialog
           import android.os.Bundle
@@ -40,26 +88,72 @@ jobs:
           import androidx.recyclerview.widget.RecyclerView
           import android.view.ViewGroup
           import android.view.View
-          data class Job(val t:String,val p:String,val d:String,val desc:String)
-          object DB{val jobs=listOf(Job("1. Перепродажа оружия 🔫","15.000 ₽","10.000 ₽/день","Скрытая работа"),Job("2. Продажа одежды 🧥","20.000 ₽","10.000 ₽/день","Бутик"),Job("3. Скрытие авто 🚘","20.000 ₽","","Ночная"),Job("4. Строительный бизнес 🚚","75.000 ₽","+10k/рейс","Возишь материалы"),Job("5. Таксист 🚖","5.000 ₽","+5k/рейс","Классика"),Job("6. Барыга 💎","200.000 ₽ начало","100.000 ₽","Серьезный бизнес"),Job("7. Директор стройки 🏢","700.000 ₽ начало","276.000 ₽","ТОП"),Job("8. Карты и рейды ⭐","45.000 ₽","","Ответственная"))}
+          data class Job(val title:String,val price:String,val day:String,val desc:String)
+          object DB{
+            val jobs = listOf(
+              Job("1. Перепродажа оружия 🔫", "💵 Оплата за работу: 15.000 ₽", "📆 Плата в день: 10.000 ₽", "Скрытая работа. Покупаешь дешево, продаешь дорого. Риск высокий, но прибыль тоже."),
+              Job("2. Продажа дорогой одежды 🧥", "💵 Оплата за работу: 20.000 ₽", "📆 Плата в день: 10.000 ₽", "Бутик элитной одежды. Клиенты богатые. Нужно уметь общаться."),
+              Job("3. Скрытие автомобиля 🚘", "💵 Зарплата: 20.000 ₽", "", "Угон и перепрятывание авто. Работа для ночных."),
+              Job("4. Строительный бизнес 🚚", "💵 Зарплата: 75.000 ₽", "(+10.000 ₽ / рейс)", "Возишь материалы на стройку. Чем больше рейсов - тем больше платят. Топ для новичков."),
+              Job("5. Работа таксистом 🚖", "💵 Зарплата: 5.000 ₽", "(+5.000 ₽ за каждый рейс)", "Классика. Берешь заказы, возишь людей по городу."),
+              Job("6. Барыга 💎", "💵 Начать работу: 200.000 ₽", "💰 Зарплата: 100.000 ₽", "Серьезный бизнес. Вход дорогой, но окупается за 2 дня. Рискованно."),
+              Job("7. Директор строит. компании 🏢", "💵 Начать работу: 700.000 ₽", "💰 Зарплата: 276.000 ₽", "ТОП работа сервера. Ты управляешь стройкой, получаешь 276к в день. Мечта."),
+              Job("8. Назначение карт и рейды ⭐", "💵 Оплата за работу: 45.000 ₽", "", "Выдаешь карты, организуешь рейды. Ответственная должность, нужен опыт.")
+            )
+          }
           class MainActivity:AppCompatActivity(){
             override fun onCreate(b:Bundle?){
-              super.onCreate(b);setContentView(R.layout.activity_main)
-              val rv=findViewById<RecyclerView>(R.id.rvWorks);rv.layoutManager=LinearLayoutManager(this)
-              rv.adapter=object:RecyclerView.Adapter<VH>(){
-                override fun onCreateViewHolder(p:ViewGroup,t:Int):VH{val l=LinearLayout(p.context);l.orientation=1;l.setPadding(24,16,24,16);val a=TextView(p.context);a.textSize=16f;a.setTextColor(-1);val b=TextView(p.context);b.setTextColor(-1);l.addView(a);l.addView(b);return VH(l,a,b)}
-                override fun getItemCount()=DB.jobs.size
-                override fun onBindViewHolder(h:VH,i:Int){val j=DB.jobs[i];h.a.text=j.t;h.b.text=j.p+" | "+j.d;h.itemView.setOnClickListener{AlertDialog.Builder(this@MainActivity).setTitle(j.t).setMessage(j.p+"\n"+j.d+"\n\n"+j.desc+"\n\nНажми 'Задать вопрос' чтобы спросить Директора").setPositiveButton("Задать вопрос"){_,_->val e=EditText(this@MainActivity);AlertDialog.Builder(this@MainActivity).setTitle("Вопрос Директору ✓").setView(e).setPositiveButton("Отправить"){_,_->Toast.makeText(this@MainActivity,"Вопрос по ${j.t} отправлен! Директор ответит в ближайшее время ✓",1).show()}.show()}.show()}}
+              super.onCreate(b)
+              setContentView(R.layout.activity_main)
+              val rv = findViewById<RecyclerView>(R.id.rv)
+              rv.layoutManager = LinearLayoutManager(this)
+              rv.adapter = object: RecyclerView.Adapter<JobHolder>(){
+                override fun onCreateViewHolder(p:ViewGroup,t:Int):JobHolder{
+                  val lay = LinearLayout(p.context)
+                  lay.orientation = LinearLayout.VERTICAL
+                  lay.setPadding(32,24,32,24)
+                  lay.setBackgroundColor(0xFF10122A.toInt())
+                  val tv1 = TextView(p.context); tv1.textSize = 16f; tv1.setTextColor(-1)
+                  val tv2 = TextView(p.context); tv2.textSize = 13f; tv2.setTextColor(0xFF7BFF7B.toInt())
+                  val tv3 = TextView(p.context); tv3.textSize = 13f; tv3.setTextColor(0xFFFFD700.toInt())
+                  val tv4 = TextView(p.context); tv4.textSize = 12f; tv4.setTextColor(0xFFAAAAAA.toInt()); tv4.text = "Нажми чтобы задать вопрос"
+                  lay.addView(tv1); lay.addView(tv2); lay.addView(tv3); lay.addView(tv4)
+                  return JobHolder(lay,tv1,tv2,tv3)
+                }
+                override fun getItemCount() = DB.jobs.size
+                override fun onBindViewHolder(h:JobHolder,i:Int){
+                  val j = DB.jobs[i]
+                  h.t1.text = j.title
+                  h.t2.text = j.price
+                  h.t3.text = j.day
+                  h.itemView.setOnClickListener{
+                    val msg = "${j.price}\n${j.day}\n\n${j.desc}\n\nХочешь задать вопрос по этой работе?"
+                    AlertDialog.Builder(this@MainActivity).setTitle(j.title).setMessage(msg)
+                      .setPositiveButton("❓ Задать вопрос"){_,_->
+                        val ed = EditText(this@MainActivity); ed.hint = "Твой вопрос по: ${j.title}"
+                        AlertDialog.Builder(this@MainActivity).setTitle("Вопрос Директору ✓").setMessage("В ближайшее время вам ответит Директор ✓").setView(ed)
+                          .setPositiveButton("Отправить"){_,_-> Toast.makeText(this@MainActivity,"Вопрос по ${j.title} отправлен Директору ✓",Toast.LENGTH_LONG).show()}.show()
+                      }
+                      .setNegativeButton("Закрыть",null).show()
+                  }
+                }
               }
-              findViewById<Button>(R.id.btnAsk).setOnClickListener{val e=EditText(this);AlertDialog.Builder(this).setTitle("❓ ЗАДАТЬ ВОПРОС ДИРЕКТОРУ").setMessage("В ближайшее время вам ответит Директор ✓").setView(e).setPositiveButton("Отправить"){_,_->Toast.makeText(this,"Отправлено Директору ✓",1).show()}.show()}
+              findViewById<Button>(R.id.btnAsk).setOnClickListener{
+                val ed = EditText(this); ed.hint = "Напиши свой вопрос..."
+                AlertDialog.Builder(this).setTitle("❓ ЗАДАТЬ ВОПРОС ДИРЕКТОРУ").setMessage("В ближайшее время вам ответит Директор ✓\n\nНапиши свой вопрос ниже:").setView(ed)
+                  .setPositiveButton("Отправить ✓"){_,_-> Toast.makeText(this,"Вопрос отправлен! Директор ответит в ближайшее время ✓",Toast.LENGTH_LONG).show()}
+                  .setNegativeButton("Отмена",null).show()
+              }
             }
-            class VH(v:View,val a:TextView,val b:TextView):RecyclerView.ViewHolder(v)
+            class JobHolder(v:View,val t1:TextView,val t2:TextView,val t3:TextView):RecyclerView.ViewHolder(v)
           }
-          KT
+          KOTLIN
+          ls -lh app/src/main/assets/
+
       - uses: gradle/actions/setup-gradle@v4
-      - run: gradle :app:assembleDebug
+      - run: gradle :app:assembleDebug --stacktrace
       - run: ls -lh app/build/outputs/apk/debug/
       - uses: actions/upload-artifact@v4
         with:
-          name: MATRESHKA-WORKS-CHAT
+          name: MATRESHKA-WORKS-CHAT-100MB
           path: app/build/outputs/apk/debug/app-debug.apk
