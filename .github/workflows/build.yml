@@ -1,0 +1,30 @@
+name: Build
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: |
+          python3 <<'PY'
+          import os
+          os.makedirs('app/src/main/java/com/matreshka/works', exist_ok=True)
+          os.makedirs('app/src/main', exist_ok=True)
+          open('settings.gradle','w').write("include ':app'")
+          open('build.gradle','w').write("plugins { id 'com.android.application' version '8.2.2' apply false }")
+          open('app/build.gradle','w').write("plugins { id 'com.android.application' }\nandroid { namespace 'com.matreshka.works'\ncompileSdk 34\ndefaultConfig { applicationId 'com.matreshka.works'\nminSdk 24\ntargetSdk 34 } }")
+          open('app/src/main/AndroidManifest.xml','w').write('<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="Matreshka"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>')
+          open('app/src/main/java/com/matreshka/works/MainActivity.kt','w').write('package com.matreshka.works\nimport android.os.Bundle\nimport android.widget.TextView\nimport androidx.appcompat.app.AppCompatActivity\nclass MainActivity: AppCompatActivity() { override fun onCreate(b: Bundle?) { super.onCreate(b); val tv=TextView(this); tv.text="Matreshka APK Ready!"; setContentView(tv) } }')
+          PY
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.5
+      - run: gradle :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: APK
+          path: app/build/outputs/apk/debug/app-debug.apk
