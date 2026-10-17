@@ -10,44 +10,20 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: |
-          mkdir -p app/src/main/java/com/matreshka/works
-          cat > settings.gradle <<'G'
-          pluginManagement {
-            repositories {
-              google()
-              mavenCentral()
-              gradlePluginPortal()
-            }
-          }
-          dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-            repositories {
-              google()
-              mavenCentral()
-            }
-          }
-          include ':app'
-          G
-          cat > build.gradle <<'G'
-          plugins {
-            id 'com.android.application' version '8.2.2' apply false
-          }
-          G
-          cat > app/build.gradle <<'G'
-          plugins {
-            id 'com.android.application'
-          }
-          android {
-            namespace 'com.matreshka.works'
-            compileSdk 34
-            defaultConfig {
-              applicationId 'com.matreshka.works'
-              minSdk 24
-              targetSdk 34
-            }
-          }
-          G
-          cat > app/src/main/AndroidManifest.xml <<'M'
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <application android:label="Matreshka">
-              <activity android:name=".MainActivity" android:exported
+          python3 <<'PY'
+          import os
+          os.makedirs('app/src/main/java/com/matreshka/works', exist_ok=True)
+          open('settings.gradle','w').write('pluginManagement{repositories{google();mavenCentral();gradlePluginPortal()}}\ndependencyResolutionManagement{repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS);repositories{google();mavenCentral()}}\ninclude ":app"\n')
+          open('build.gradle','w').write('plugins{id "com.android.application" version "8.2.2" apply false}\n')
+          open('app/build.gradle','w').write('plugins{id "com.android.application"}\nandroid{namespace "com.matreshka.works";compileSdk 34;defaultConfig{applicationId "com.matreshka.works";minSdk 24;targetSdk 34}}\n')
+          open('app/src/main/AndroidManifest.xml','w').write('<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="Matreshka"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>')
+          open('app/src/main/java/com/matreshka/works/MainActivity.kt','w').write('package com.matreshka.works\nimport android.app.Activity\nimport android.os.Bundle\nimport android.widget.TextView\nclass MainActivity:Activity(){override fun onCreate(b:Bundle?){super.onCreate(b);val tv=TextView(this);tv.text="Matreshka APK Ready!";setContentView(tv)}}')
+          PY
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.5
+      - run: gradle :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: APK
+          path: app/build/outputs/apk/debug/app-debug.apk
