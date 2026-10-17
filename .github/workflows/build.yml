@@ -10,65 +10,23 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: |
-          rm -rf app/src
+          rm -rf app
           mkdir -p app/src/main/java/com/matreshka/works
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/layout
-          cat > settings.gradle <<'G'
-          pluginManagement{repositories{google();mavenCentral();gradlePluginPortal()}}
-          include ":app"
-          G
-          cat > build.gradle <<'G'
-          plugins{id "com.android.application" version "8.2.2" apply false}
-          G
+          echo 'pluginManagement{repositories{google();mavenCentral();gradlePluginPortal()}} include ":app"' > settings.gradle
+          echo 'plugins{id "com.android.application" version "8.2.2" apply false}' > build.gradle
           cat > app/build.gradle <<'G'
           plugins{id "com.android.application"}
-          android{
-            namespace "com.matreshka.works"
-            compileSdk 34
-            defaultConfig{
-              applicationId "com.matreshka.works"
-              minSdk 24
-              targetSdk 34
-              versionCode 14
-              versionName "2.1-chat"
-            }
-            compileOptions{
-              sourceCompatibility JavaVersion.VERSION_17
-              targetCompatibility JavaVersion.VERSION_17
-            }
-          }
-          dependencies{
-            implementation "androidx.appcompat:appcompat:1.6.1"
-            implementation "com.google.android.material:material:1.11.0"
-            implementation "androidx.recyclerview:recyclerview:1.3.2"
-          }
+          android{namespace "com.matreshka.works";compileSdk 34;defaultConfig{applicationId "com.matreshka.works";minSdk 24;targetSdk 34;versionCode 15;versionName "2.1"};compileOptions{sourceCompatibility JavaVersion.VERSION_17;targetCompatibility JavaVersion.VERSION_17}}
+          dependencies{implementation "androidx.appcompat:appcompat:1.6.1";implementation "com.google.android.material:material:1.11.0";implementation "androidx.recyclerview:recyclerview:1.3.2"}
           G
           cat > app/src/main/AndroidManifest.xml <<'M'
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <application android:label="Matreshka Chat" android:theme="@style/Theme.AppCompat.DayNight" android:icon="@mipmap/ic_launcher">
-              <activity android:name=".MainActivity" android:exported="true">
-                <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
-              </activity>
-            </application>
-          </manifest>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="Matreshka Chat" android:theme="@android:style/Theme.Material.Light.DarkActionBar"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>
           M
-          cat > app/src/main/res/values/strings.xml <<'S'
-          <resources><string name="app_name">Matreshka Chat</string></resources>
-          S
+          echo '<resources><string name="app_name">Matreshka Chat</string></resources>' > app/src/main/res/values/strings.xml
           cat > app/src/main/res/layout/activity_main.xml <<'L'
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
-            <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="8dp">
-              <Button android:id="@+id/btnManifest" android:text="Манифест" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
-              <Button android:id="@+id/btnIcon" android:text="Иконка" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
-              <Button android:id="@+id/btnAdmin" android:text="Админ" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
-            </LinearLayout>
-            <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:padding="8dp"/>
-            <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="8dp">
-              <EditText android:id="@+id/input" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="Каждый игрок пишет что хочет..."/>
-              <Button android:id="@+id/btnSend" android:text="→" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-            </LinearLayout>
-          </LinearLayout>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent"><LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="8dp"><Button android:id="@+id/btnManifest" android:text="Манифест" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/><Button android:id="@+id/btnIcon" android:text="Иконка" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/><Button android:id="@+id/btnAdmin" android:text="Админ" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/></LinearLayout><androidx.recyclerview.widget.RecyclerView android:id="@+id/rv" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:padding="8dp"/><LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="8dp"><EditText android:id="@+id/input" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="Каждый игрок пишет что хочет..."/><Button android:id="@+id/btnSend" android:text="OK" android:layout_width="wrap_content" android:layout_height="wrap_content"/></LinearLayout></LinearLayout>
           L
           cat > app/src/main/java/com/matreshka/works/MainActivity.kt <<'K'
           package com.matreshka.works
@@ -76,7 +34,6 @@ jobs:
           import android.os.Bundle
           import android.widget.Button
           import android.widget.EditText
-          import android.widget.ImageView
           import android.widget.TextView
           import androidx.appcompat.app.AppCompatActivity
           import androidx.recyclerview.widget.LinearLayoutManager
@@ -84,81 +41,45 @@ jobs:
           import android.view.LayoutInflater
           import android.view.View
           import android.view.ViewGroup
-
-          data class Msg(val user:String, val text:String)
-          object Store{
-            val list = mutableListOf(Msg("Система","Добро пожаловать в Matreshka Chat! Это как Телега, но чат со мной. Каждый может спрашивать что хочет."))
-            var isAdmin = false
-          }
-
-          class MainActivity: AppCompatActivity(){
+          data class Msg(val u:String,val t:String)
+          object S{val list=mutableListOf(Msg("Система","Matreshka Chat - как Телега, но чат со мной. Каждый игрок может задать любой вопрос!"));var admin=false}
+          class MainActivity:AppCompatActivity(){
             override fun onCreate(b:Bundle?){
               super.onCreate(b)
               setContentView(R.layout.activity_main)
-              val rv = findViewById<RecyclerView>(R.id.rv)
-              val input = findViewById<EditText>(R.id.input)
-              val btnSend = findViewById<Button>(R.id.btnSend)
-              rv.layoutManager = LinearLayoutManager(this)
-              val adapter = object: RecyclerView.Adapter<VH>(){
-                override fun onCreateViewHolder(p:ViewGroup, t:Int): VH {
-                  val v = LayoutInflater.from(p.context).inflate(android.R.layout.simple_list_item_2, p, false)
-                  return VH(v)
-                }
-                override fun getItemCount() = Store.list.size
-                override fun onBindViewHolder(h:VH, i:Int){
-                  h.t1.text = Store.list[i].user
-                  h.t2.text = Store.list[i].text
-                }
+              val rv=findViewById<RecyclerView>(R.id.rv);val input=findViewById<EditText>(R.id.input)
+              rv.layoutManager=LinearLayoutManager(this)
+              val ad=object:RecyclerView.Adapter<VH>(){
+                override fun onCreateViewHolder(p:ViewGroup,v:Int)=VH(LayoutInflater.from(p.context).inflate(android.R.layout.simple_list_item_2,p,false))
+                override fun getItemCount()=S.list.size
+                override fun onBindViewHolder(h:VH,i:Int){h.a.text=S.list[i].u;h.b.text=S.list[i].t}
               }
-              rv.adapter = adapter
-
-              btnSend.setOnClickListener{
-                val txt = input.text.toString().trim()
-                if(txt.isEmpty()) return@setOnClickListener
-                val name = if(Store.isAdmin) "АДМИН (ты)" else "Игрок"
-                Store.list.add(Msg(name, txt))
-                if(!Store.isAdmin){
-                  Store.list.add(Msg("Ты (владелец)", "Получил вопрос: $txt - отвечу!"))
-                }
-                input.text.clear()
-                adapter.notifyDataSetChanged()
-                rv.scrollToPosition(Store.list.size-1)
+              rv.adapter=ad
+              findViewById<Button>(R.id.btnSend).setOnClickListener{
+                val t=input.text.toString().trim();if(t.isEmpty())return@setOnClickListener
+                S.list.add(Msg(if(S.admin)"АДМИН" else "Игрок",t))
+                if(!S.admin) S.list.add(Msg("Владелец","Принял: $t"))
+                input.text.clear();ad.notifyDataSetChanged();rv.scrollToPosition(S.list.size-1)
               }
-
               findViewById<Button>(R.id.btnManifest).setOnClickListener{
-                AlertDialog.Builder(this)
-                  .setTitle("AndroidManifest.xml")
-                  .setMessage("<manifest package=\"com.matreshka.works\">\n  <application label=\"Matreshka Chat\" icon=\"@mipmap/ic_launcher\" />\n  <feature name=\"chat\" />\n  <feature name=\"admin-assign\" />\n</manifest>\n\nЭто твой манифест!")
-                  .setPositiveButton("OK", null).show()
+                AlertDialog.Builder(this).setTitle("Манифест").setMessage("<manifest>\n package=com.matreshka.works\n chat=enabled\n admin=can-assign\n icon=visible\n</manifest>").setPositiveButton("OK",null).show()
               }
               findViewById<Button>(R.id.btnIcon).setOnClickListener{
-                val iv = ImageView(this); iv.setImageResource(android.R.drawable.sym_def_app_icon)
-                AlertDialog.Builder(this).setTitle("Иконка приложения").setView(iv).setPositiveButton("OK", null).show()
+                AlertDialog.Builder(this).setTitle("Иконка").setMessage("Иконка: Matreshka Chat v2.1\nТип: Чат со мной\nАдмин: назначается по паролю matreshka").setPositiveButton("OK",null).show()
               }
               findViewById<Button>(R.id.btnAdmin).setOnClickListener{
-                val et = EditText(this); et.hint="Пароль: matreshka"
-                AlertDialog.Builder(this).setTitle("Назначить админа").setView(et)
-                  .setPositiveButton("Войти"){_,_->
-                    if(et.text.toString()=="matreshka"){
-                      Store.isAdmin=true
-                      AlertDialog.Builder(this).setMessage("Ты теперь АДМИН! Можешь отвечать всем игрокам.").show()
-                    } else {
-                      AlertDialog.Builder(this).setMessage("Неверный пароль").show()
-                    }
-                  }.setNegativeButton("Сделать очистку чата"){_,_->
-                    if(Store.isAdmin){ Store.list.clear(); adapter.notifyDataSetChanged() }
-                  }.show()
+                val e=EditText(this);e.hint="Пароль matreshka"
+                AlertDialog.Builder(this).setTitle("Админ-панель").setView(e).setPositiveButton("Войти"){_,_->
+                  if(e.text.toString()=="matreshka"){S.admin=true;AlertDialog.Builder(this).setMessage("Ты АДМИН! Теперь можешь отвечать игрокам и чистить чат.").show()}
+                }.setNegativeButton("Очистить чат"){_,_->if(S.admin){S.list.clear();ad.notifyDataSetChanged()}}.show()
               }
             }
-            class VH(v:View): RecyclerView.ViewHolder(v){
-              val t1 = v.findViewById<TextView>(android.R.id.text1)
-              val t2 = v.findViewById<TextView>(android.R.id.text2)
-            }
+            class VH(v:View):RecyclerView.ViewHolder(v){val a=v.findViewById<TextView>(android.R.id.text1);val b=v.findViewById<TextView>(android.R.id.text2)}
           }
           K
       - uses: gradle/actions/setup-gradle@v4
       - run: gradle :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: APK-Chat-Fixed
+          name: Matreshka-Chat-APK
           path: app/build/outputs/apk/debug/app-debug.apk
